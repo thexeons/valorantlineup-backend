@@ -1,4 +1,4 @@
-package org.gtf.valorantineup.dto.response;
+package org.gtf.valorantlineup.dto.response;
 
 import lombok.Data;
 

@@ -1,6 +1,6 @@
-package org.gtf.valorantineup.repositories;
+package org.gtf.valorantlineup.repositories;
 
-import org.gtf.valorantineup.models.Base;
+import org.gtf.valorantlineup.models.Base;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 

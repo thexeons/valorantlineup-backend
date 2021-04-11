@@ -1,16 +1,16 @@
-package org.gtf.valorantineup.services;
+package org.gtf.valorantlineup.services;
 
 import org.apache.commons.io.FilenameUtils;
-import org.gtf.valorantineup.dto.request.LineupRequest;
-import org.gtf.valorantineup.dto.request.NodeRequest;
-import org.gtf.valorantineup.dto.response.ImageResponse;
-import org.gtf.valorantineup.dto.response.NodeResponse;
-import org.gtf.valorantineup.dto.response.LineupResponse;
-import org.gtf.valorantineup.exception.GTFException;
-import org.gtf.valorantineup.models.*;
-import org.gtf.valorantineup.repositories.ImageRepository;
-import org.gtf.valorantineup.repositories.NodeRepository;
-import org.gtf.valorantineup.repositories.LineupRepository;
+import org.gtf.valorantlineup.dto.request.LineupRequest;
+import org.gtf.valorantlineup.dto.request.NodeRequest;
+import org.gtf.valorantlineup.dto.response.ImageResponse;
+import org.gtf.valorantlineup.dto.response.NodeResponse;
+import org.gtf.valorantlineup.dto.response.LineupResponse;
+import org.gtf.valorantlineup.exception.GTFException;
+import org.gtf.valorantlineup.models.*;
+import org.gtf.valorantlineup.repositories.ImageRepository;
+import org.gtf.valorantlineup.repositories.NodeRepository;
+import org.gtf.valorantlineup.repositories.LineupRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,8 +1,8 @@
-package org.gtf.valorantineup.services;
+package org.gtf.valorantlineup.services;
 
-import org.gtf.valorantineup.enums.ERole;
-import org.gtf.valorantineup.models.Role;
-import org.gtf.valorantineup.repositories.RoleRepository;
+import org.gtf.valorantlineup.enums.ERole;
+import org.gtf.valorantlineup.models.Role;
+import org.gtf.valorantlineup.repositories.RoleRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.event.ContextRefreshedEvent;

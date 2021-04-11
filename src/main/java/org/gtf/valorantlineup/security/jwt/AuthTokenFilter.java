@@ -1,6 +1,6 @@
-package org.gtf.valorantineup.security.jwt;
+package org.gtf.valorantlineup.security.jwt;
 
-import org.gtf.valorantineup.security.implementation.UserDetailsServiceImpl;
+import org.gtf.valorantlineup.security.implementation.UserDetailsServiceImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

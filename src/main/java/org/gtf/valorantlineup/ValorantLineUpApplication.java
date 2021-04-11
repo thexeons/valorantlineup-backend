@@ -1,4 +1,4 @@
-package org.gtf.valorantineup;
+package org.gtf.valorantlineup;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

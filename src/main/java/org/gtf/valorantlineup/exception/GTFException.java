@@ -1,4 +1,4 @@
-package org.gtf.valorantineup.exception;
+package org.gtf.valorantlineup.exception;
 
 import org.springframework.http.HttpStatus;
 

@@ -1,4 +1,4 @@
-package org.gtf.valorantineup.dto.request;
+package org.gtf.valorantlineup.dto.request;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;

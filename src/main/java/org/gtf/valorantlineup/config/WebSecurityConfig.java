@@ -1,10 +1,10 @@
-package org.gtf.valorantineup.config;
+package org.gtf.valorantlineup.config;
 
 
-import org.gtf.valorantineup.exception.ForbiddenHandler;
-import org.gtf.valorantineup.security.implementation.UserDetailsServiceImpl;
-import org.gtf.valorantineup.security.jwt.AuthEntryPointJwt;
-import org.gtf.valorantineup.security.jwt.AuthTokenFilter;
+import org.gtf.valorantlineup.exception.ForbiddenHandler;
+import org.gtf.valorantlineup.security.implementation.UserDetailsServiceImpl;
+import org.gtf.valorantlineup.security.jwt.AuthEntryPointJwt;
+import org.gtf.valorantlineup.security.jwt.AuthTokenFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

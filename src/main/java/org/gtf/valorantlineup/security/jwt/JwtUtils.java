@@ -1,8 +1,8 @@
-package org.gtf.valorantineup.security.jwt;
+package org.gtf.valorantlineup.security.jwt;
 
 import io.jsonwebtoken.*;
-import org.gtf.valorantineup.models.User;
-import org.gtf.valorantineup.security.implementation.UserDetailsImpl;
+import org.gtf.valorantlineup.models.User;
+import org.gtf.valorantlineup.security.implementation.UserDetailsImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

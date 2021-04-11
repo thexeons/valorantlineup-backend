@@ -1,12 +1,12 @@
-package org.gtf.valorantineup.controllers;
+package org.gtf.valorantlineup.controllers;
 
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.gtf.valorantineup.dto.request.*;
+import org.gtf.valorantlineup.dto.request.*;
 
-import org.gtf.valorantineup.exception.AbstractRequestHandler;
-import org.gtf.valorantineup.services.AuthenticationService;
+import org.gtf.valorantlineup.exception.AbstractRequestHandler;
+import org.gtf.valorantlineup.services.AuthenticationService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

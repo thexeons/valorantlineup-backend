@@ -1,8 +1,8 @@
-package org.gtf.valorantineup.security.implementation;
+package org.gtf.valorantlineup.security.implementation;
 
 
-import org.gtf.valorantineup.models.User;
-import org.gtf.valorantineup.repositories.UserRepository;
+import org.gtf.valorantlineup.models.User;
+import org.gtf.valorantlineup.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.userdetails.UserDetails;

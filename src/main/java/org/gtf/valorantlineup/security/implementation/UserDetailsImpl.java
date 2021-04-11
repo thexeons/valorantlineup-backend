@@ -1,7 +1,7 @@
-package org.gtf.valorantineup.security.implementation;
+package org.gtf.valorantlineup.security.implementation;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import org.gtf.valorantineup.models.User;
+import org.gtf.valorantlineup.models.User;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;

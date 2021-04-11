@@ -1,4 +1,4 @@
-package org.gtf.valorantineup.config;
+package org.gtf.valorantlineup.config;
 
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

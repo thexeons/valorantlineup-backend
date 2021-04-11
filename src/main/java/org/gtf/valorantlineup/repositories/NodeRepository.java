@@ -1,6 +1,6 @@
-package org.gtf.valorantineup.repositories;
+package org.gtf.valorantlineup.repositories;
 
-import org.gtf.valorantineup.models.Node;
+import org.gtf.valorantlineup.models.Node;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;

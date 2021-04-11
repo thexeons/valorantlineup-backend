@@ -1,11 +1,11 @@
-package org.gtf.valorantineup.controllers;
+package org.gtf.valorantlineup.controllers;
 
 
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.gtf.valorantineup.dto.request.LineupRequest;
-import org.gtf.valorantineup.dto.request.NodeRequest;
-import org.gtf.valorantineup.exception.AbstractRequestHandler;
-import org.gtf.valorantineup.services.LineupService;
+import org.gtf.valorantlineup.dto.request.LineupRequest;
+import org.gtf.valorantlineup.dto.request.NodeRequest;
+import org.gtf.valorantlineup.exception.AbstractRequestHandler;
+import org.gtf.valorantlineup.services.LineupService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package org.gtf.valorantineup.models;
+package org.gtf.valorantlineup.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;

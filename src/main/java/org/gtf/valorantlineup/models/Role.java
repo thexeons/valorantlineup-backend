@@ -1,7 +1,7 @@
-package org.gtf.valorantineup.models;
+package org.gtf.valorantlineup.models;
 
 import lombok.Data;
-import org.gtf.valorantineup.enums.ERole;
+import org.gtf.valorantlineup.enums.ERole;
 
 import javax.persistence.*;
 

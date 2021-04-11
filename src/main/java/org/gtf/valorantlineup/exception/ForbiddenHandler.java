@@ -1,6 +1,6 @@
-package org.gtf.valorantineup.exception;
+package org.gtf.valorantlineup.exception;
 
-import org.gtf.valorantineup.security.jwt.AuthEntryPointJwt;
+import org.gtf.valorantlineup.security.jwt.AuthEntryPointJwt;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.AccessDeniedException;

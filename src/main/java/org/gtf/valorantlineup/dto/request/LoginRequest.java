@@ -1,6 +1,5 @@
-package org.gtf.valorantineup.dto.request;
+package org.gtf.valorantlineup.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import lombok.Data;

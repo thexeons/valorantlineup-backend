@@ -1,9 +1,9 @@
-package org.gtf.valorantineup.models;
+package org.gtf.valorantlineup.models;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 import lombok.Data;
-import org.gtf.valorantineup.enums.ERole;
+import org.gtf.valorantlineup.enums.ERole;
 
 import javax.persistence.*;
 import java.util.Date;
@@ -41,7 +41,7 @@ public class User extends Base {
 	@JoinTable(	name = "user_roles",
 				joinColumns = @JoinColumn(name = "user_id", nullable = false),
 				inverseJoinColumns = @JoinColumn(name = "role_id"))
-	private Set<org.gtf.valorantineup.models.Role> roles = new HashSet<>();
+	private Set<org.gtf.valorantlineup.models.Role> roles = new HashSet<>();
 
 	public User() {
 

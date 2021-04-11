@@ -8,4 +8,8 @@ target
 *.iml
 *.ipr
 
+connect.bat
+xcidic-learning.pem
+
+src/main/resources/application.properties
 
