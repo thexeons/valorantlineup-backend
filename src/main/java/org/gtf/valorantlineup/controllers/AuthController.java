@@ -71,7 +71,7 @@ public class AuthController {
             method = RequestMethod.GET,
             produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    @Operation(summary = "Experimental endpoint for sandboxing purposes.")
+    @Operation(summary = "Get a new token using refresh token.")
     public ResponseEntity<?> refreshToken(@PathVariable String token) {
         AbstractRequestHandler handler = new AbstractRequestHandler() {
             @Override

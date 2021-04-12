@@ -1,8 +1,10 @@
-package com.bca.mypartner.aspect;
+package org.gtf.valorantlineup.aspect;
 
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
-import org.aspectj.lang.annotation.*;
+import org.aspectj.lang.annotation.AfterReturning;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.CodeSignature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StopWatch;
+
 import javax.servlet.http.HttpServletRequest;
 
 @Aspect
@@ -25,7 +28,7 @@ public class AspectLogger {
     private HttpServletRequest request;
 
     @Autowired
-    public AspectLogger(@Value("${log.request.body}") boolean LOG_REQUESTBODY,@Value("${log.response.body}") boolean LOG_RESPONSEBODY, HttpServletRequest request) {
+    public AspectLogger(@Value("${log.request.body}") boolean LOG_REQUESTBODY, @Value("${log.response.body}") boolean LOG_RESPONSEBODY, HttpServletRequest request) {
         this.LOG_REQUESTBODY = LOG_REQUESTBODY;
         this.LOG_RESPONSEBODY = LOG_RESPONSEBODY;
         this.request = request;
@@ -46,7 +49,7 @@ public class AspectLogger {
     }
 
     //Logs all method call from controller package
-    @Around("execution(* com.bca.mypartner.controllers..*.*(..))")
+    @Around("execution(* org.gtf.valorantlineup.controllers..*.*(..))")
     public Object apiInterceptor(ProceedingJoinPoint joinPoint) throws Throwable {
         StopWatch stopWatch = new StopWatch();
         try {
@@ -64,7 +67,7 @@ public class AspectLogger {
         }
     }
     //Logs return object from controller package
-    @AfterReturning(pointcut = "execution(* com.bca.mypartner.controllers..*.*(..))",
+    @AfterReturning(pointcut = "execution(* org.gtf.valorantlineup.controllers..*.*(..))",
             returning = "retVal")
     public void afterReturningAdvice(JoinPoint jp, Object retVal){
         if(LOG_RESPONSEBODY) LOGGER.info("Response: " + retVal.toString());

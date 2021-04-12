@@ -151,23 +151,14 @@ public class AuthenticationService {
                 signUpRequest.getEmail(),
                 encoder.encode(signUpRequest.getPassword()));
 
-        Set<String> strRoles = signUpRequest.getRole();
-        Set<Role> roles = new HashSet<>();
-
-        System.out.println(strRoles);
-
-        if (strRoles.isEmpty()) {
+            Set<Role> roles = new HashSet<>();
             Role userRole = roleRepository.findByName(ERole.ROLE_ADMIN)
                     .orElseThrow(() -> new GTFException(HttpStatus.NOT_FOUND, "Error: Role is not found."));
             roles.add(userRole);
 
             user.setRoles(roles);
             userRepository.saveAndFlush(user);
-        }
-        else {
-            System.out.println("strroles tidak kosong");
-        }
-        System.out.print(user);
+
     }
 
     public Optional<User> getCurrentUser() {

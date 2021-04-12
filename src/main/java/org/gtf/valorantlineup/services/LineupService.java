@@ -45,6 +45,9 @@ public class LineupService {
     @Value("${upload.path}")
     String uploadPath;
 
+    @Value("${download.path}")
+    String downloadPath;
+
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
     public List<LineupResponse> getLineUps() {
@@ -96,7 +99,7 @@ public class LineupService {
         return response;
     }
 
-    public String postLineup(LineupRequest lineupRequest){
+    public LineupResponse postLineup(LineupRequest lineupRequest){
         User user = authenticationService.getCurrentUser().orElseThrow(() -> new GTFException(HttpStatus.NOT_FOUND, "Error: User not found"));
         if(lineupRepository.existsByTitle(lineupRequest.getTitle())){
             throw new GTFException(HttpStatus.CONFLICT, "Error: Title existed.");
@@ -105,8 +108,39 @@ public class LineupService {
         lineup.setUser(user);
         lineup.setTitle(lineupRequest.getTitle());
         lineup.setMap(lineupRequest.getMap());
-        lineupRepository.saveAndFlush(lineup);
-        return "Lineup created!";
+        lineup = lineupRepository.saveAndFlush(lineup);
+        LineupResponse lineupResponse = new LineupResponse();
+        lineupResponse.setMap(lineup.getMap());
+        lineupResponse.setTitle(lineup.getTitle());
+        lineupResponse.setUuidLineup(lineup.getUuid());
+        return lineupResponse;
+    }
+
+    public LineupResponse editLineup(String uuid, LineupRequest lineupRequest){
+        User user = authenticationService.getCurrentUser().orElseThrow(() -> new GTFException(HttpStatus.NOT_FOUND, "Error: User not found"));
+        Lineup lineup = lineupRepository.findByUuid(uuid);
+        if(lineup==null){
+            throw new GTFException(HttpStatus.CONFLICT,"Lineup not found!");
+        }
+        if(lineup.getUser().getUuid()!=user.getUuid()){
+            throw new GTFException(HttpStatus.FORBIDDEN, "Can't edit other user's lineup!");
+        }
+        lineup.setTitle(lineupRequest.getTitle());
+        lineup = lineupRepository.saveAndFlush(lineup);
+        LineupResponse lineupResponse = new LineupResponse();
+        lineupResponse.setMap(lineup.getMap());
+        lineupResponse.setTitle(lineup.getTitle());
+        lineupResponse.setUuidLineup(lineup.getUuid());
+        return lineupResponse;
+    }
+
+    public String deleteLineup(String uuid){
+        Lineup lineup = lineupRepository.findByUuid(uuid);
+        if(lineup==null){
+            throw new GTFException(HttpStatus.CONFLICT,"Lineup not found!");
+        }
+        lineupRepository.delete(lineup);
+        return "Lineup has been deleted!";
     }
 
     @Transactional
@@ -170,7 +204,7 @@ public class LineupService {
         Image image = new Image();
         image.setFileSize(file.getSize());
         image.setOriginalName(file.getOriginalFilename());
-        image.setUrl(uploadPath + datecode.format(new Date()) + "." + extension);
+        image.setUrl(downloadPath + datecode.format(new Date()) + "." + extension);
         image = imageRepository.saveAndFlush(image);
         ImageResponse response = new ImageResponse();
         response.setUrl(image.getUrl());
