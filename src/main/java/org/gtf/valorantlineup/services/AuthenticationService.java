@@ -63,27 +63,29 @@ public class AuthenticationService {
     }
 
     public LoginResponse authenticateUser(LoginRequest loginRequest) {
+        String username = "";
+        User user;
+        if(loginRequest.getUserIdentifier().indexOf('@') != -1){
+            try {
+                user = userRepository.findByEmail(loginRequest.getUserIdentifier()).get();
+                username = user.getUsername();
+            }catch(NoSuchElementException e)
+            {
+                user = null;
+            }
+        }
+        else {
+            user = userRepository.findByUsername(loginRequest.getUserIdentifier()).get();
+            username = user.getUsername();
+        }
 
         //Authenticate a user manually. This method will trigger SUCCESS / BAD CREDENTIAL EVENT listened by the AuthenticationListener.
         Authentication authentication = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword()));
+                new UsernamePasswordAuthenticationToken(username, loginRequest.getPassword()));
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         LoginResponse loginResponse = new LoginResponse();
-        User user = userRepository.findByEmail(loginRequest.getUsername()).orElseThrow(() -> new UsernameNotFoundException("User Not Found with email: " + loginRequest.getUsername()));
 
-//         if (user.getERoles().contains(ERole.ROLE_PENDAMPING)) {
-//                PendampingLoginDataResponse pendampingLoginDataResponse = new PendampingLoginDataResponse();
-//                PendampingAkad pendampingAkad = pendampingAkadRepository.findByUser(user);
-//                if (null == pendampingAkad)
-//                    throw new XcidicException(HttpStatus.NOT_FOUND, "Error: Data pendamping akad tidak ditemukan.");
-//                pendampingLoginDataResponse.setEmail(user.getEmail());
-//                pendampingLoginDataResponse.setFullName(pendampingAkad.getFullName());
-//                pendampingLoginDataResponse.setUuidPendamping(pendampingAkad.getUuid()); //Set pendamping akad's UUID, not his/her notary UUID.
-//                pendampingLoginDataResponse.setUuidUser(user.getUuid());
-//                pendampingLoginDataResponse.setChangePassword(user.getImmediateChangePassword());
-//                loginResponse.setData(pendampingLoginDataResponse);
-//            }
         //generate JWT
         loginResponse.setToken(jwtUtils.generateJwtToken(authentication));
         //generate Refresh Token

@@ -7,7 +7,7 @@ import lombok.Data;
 @Data
 public class LoginRequest {
 	@NotBlank
-	private String username;
+	private String userIdentifier;
 
 	@NotBlank
 	@Size(min = 6, max = 20)

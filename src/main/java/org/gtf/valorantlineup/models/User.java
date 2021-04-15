@@ -15,6 +15,10 @@ import java.util.Set;
 		uniqueConstraints = { 
 			@UniqueConstraint(columnNames = "username"),
 			@UniqueConstraint(columnNames = "email")
+		},
+		indexes = {
+				@Index(name = "un_index", columnList = "username"),
+				@Index(name = "em_index", columnList = "email")
 		})
 @Data
 public class User extends Base {

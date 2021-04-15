@@ -6,7 +6,10 @@ import javax.persistence.*;
 import java.util.List;
 
 @Entity
-@Table(name = "lineups")
+@Table(name = "lineups",
+        indexes = {
+        @Index(name = "uuid_index", columnList = "uuid")
+        })
 @Data
 public class Lineup extends Base {
 
