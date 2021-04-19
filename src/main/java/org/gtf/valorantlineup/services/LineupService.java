@@ -1,11 +1,10 @@
 package org.gtf.valorantlineup.services;
 
 import org.apache.commons.io.FilenameUtils;
-import org.gtf.valorantlineup.dto.request.LineupRequest;
+import org.gtf.valorantlineup.dto.request.LineupMetaRequest;
 import org.gtf.valorantlineup.dto.request.NodeRequest;
-import org.gtf.valorantlineup.dto.response.ImageResponse;
-import org.gtf.valorantlineup.dto.response.NodeResponse;
-import org.gtf.valorantlineup.dto.response.LineupResponse;
+import org.gtf.valorantlineup.dto.response.*;
+import org.gtf.valorantlineup.enums.Peta;
 import org.gtf.valorantlineup.exception.GTFException;
 import org.gtf.valorantlineup.models.*;
 import org.gtf.valorantlineup.repositories.ImageRepository;
@@ -15,6 +14,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,24 +53,74 @@ public class LineupService {
 
     private final Logger LOGGER = LoggerFactory.getLogger(this.getClass());
 
-    public List<LineupResponse> getLineUps() {
-        List<LineupResponse> response = new ArrayList<>();
+    public List<LineupMetaResponse> getLineUps() {
+        List<LineupMetaResponse> response = new ArrayList<>();
         User user = authenticationService.getCurrentUser().orElseThrow(() -> new GTFException(HttpStatus.NOT_FOUND, "Error: User not found"));
         List<Lineup> lineups = lineupRepository.findAllByUser(user);
         for (int i = 0; i < lineups.size(); i++) {
-            LineupResponse row = new LineupResponse();
+            LineupMetaResponse row = new LineupMetaResponse();
             row.setUuidLineup(lineups.get(i).getUuid());
             row.setTitle(lineups.get(i).getTitle());
-            row.setMap(lineups.get(i).getMap());
+            row.setMap(lineups.get(i).getMap().name());
             response.add(row);
         }
         return response;
     }
 
-    public List<NodeResponse> getNodes(String uuid) {
-        List<NodeResponse> response = new ArrayList<>();
-        if(!lineupRepository.existsByUuid(uuid)){
+    public LineupPaginatedResponse getPublicLineUps(int page, int size, String sortBy, String title, Peta map) {
+        //Check title
+        //Prevent remarks from null value
+        if (title == null) title = "";
+        Pageable halaman = PageRequest.of(page, size, Sort.by(sortBy));
+        Page<Lineup> lineups;
+        if(map == null)
+        {
+            lineups = lineupRepository.filterLineup(title,halaman);
+        }
+        else
+        {
+            lineups = lineupRepository.filterLineupEnum(title,map.name(),halaman);
+        }
+        LineupPaginatedResponse paginate = generateLineupMetaPagination(lineups);
+        return paginate;
+    }
+
+    private LineupPaginatedResponse generateLineupMetaPagination(Page<Lineup> lineups) {
+        List<LineupMetaResponse> vo = new ArrayList<>();
+        LineupPaginatedResponse paginate = new LineupPaginatedResponse();
+        for (Lineup x : lineups) {
+            vo.add(convertLineupMetaDTO(x));
+        }
+        paginate.setLineups(vo);
+        paginate.setCurrentPage(lineups.getNumber());
+        paginate.setTotalPage(lineups.getTotalPages());
+        paginate.setTotalElements(lineups.getTotalElements());
+        paginate.setHasContent(lineups.hasContent());
+        paginate.setHasNext(lineups.hasNext());
+        paginate.setHasPrevious(lineups.hasPrevious());
+        return paginate;
+    }
+
+    private LineupMetaResponse convertLineupMetaDTO(Lineup lineup){
+        LineupMetaResponse response = new LineupMetaResponse();
+        response.setTitle(lineup.getTitle());
+        response.setUuidLineup(lineup.getUuid());
+        response.setMap(lineup.getMap().name());
+        return response;
+    }
+
+    public LineupNodeResponse getNodes(String uuid) {
+        LineupNodeResponse response = new LineupNodeResponse();
+        List<NodeResponse> nodeResponse = new ArrayList<>();
+        LineupMetaResponse meta = new LineupMetaResponse();
+        Lineup lineup = lineupRepository.findByUuid(uuid);
+        if(lineup == null){
             throw new GTFException(HttpStatus.NOT_FOUND,"Error: Lineup not found!");
+        } else {
+            meta.setMap(lineup.getMap().name());
+            meta.setUuidLineup(lineup.getUuid());
+            meta.setTitle(lineup.getTitle());
+            response.setMeta(meta);
         }
         List<Node> nodes = nodeRepository.findAllByLineupUuid(uuid);
         for (int i = 0; i < nodes.size(); i++) {
@@ -94,29 +147,26 @@ public class LineupService {
                 imageResponses.add(imageResponse);
             }
             row.setImages(imageResponses);
-            response.add(row);
+            nodeResponse.add(row);
         }
         return response;
     }
 
-    public LineupResponse postLineup(LineupRequest lineupRequest){
+    public LineupMetaResponse postLineup(LineupMetaRequest lineupMetaRequest){
         User user = authenticationService.getCurrentUser().orElseThrow(() -> new GTFException(HttpStatus.NOT_FOUND, "Error: User not found"));
-        if(lineupRepository.existsByTitle(lineupRequest.getTitle())){
-            throw new GTFException(HttpStatus.CONFLICT, "Error: Title existed.");
-        }
         Lineup lineup = new Lineup();
         lineup.setUser(user);
-        lineup.setTitle(lineupRequest.getTitle());
-        lineup.setMap(lineupRequest.getMap());
+        lineup.setTitle(lineupMetaRequest.getTitle());
+        lineup.setMap(Peta.valueOf(lineupMetaRequest.getMap()));
         lineup = lineupRepository.saveAndFlush(lineup);
-        LineupResponse lineupResponse = new LineupResponse();
-        lineupResponse.setMap(lineup.getMap());
-        lineupResponse.setTitle(lineup.getTitle());
-        lineupResponse.setUuidLineup(lineup.getUuid());
-        return lineupResponse;
+        LineupMetaResponse lineupMetaResponse = new LineupMetaResponse();
+        lineupMetaResponse.setMap(lineup.getMap().name());
+        lineupMetaResponse.setTitle(lineup.getTitle());
+        lineupMetaResponse.setUuidLineup(lineup.getUuid());
+        return lineupMetaResponse;
     }
 
-    public LineupResponse editLineup(String uuid, LineupRequest lineupRequest){
+    public LineupMetaResponse editLineup(String uuid, LineupMetaRequest lineupMetaRequest){
         User user = authenticationService.getCurrentUser().orElseThrow(() -> new GTFException(HttpStatus.NOT_FOUND, "Error: User not found"));
         Lineup lineup = lineupRepository.findByUuid(uuid);
         if(lineup==null){
@@ -125,13 +175,13 @@ public class LineupService {
         if(lineup.getUser().getUuid()!=user.getUuid()){
             throw new GTFException(HttpStatus.FORBIDDEN, "Can't edit other user's lineup!");
         }
-        lineup.setTitle(lineupRequest.getTitle());
+        lineup.setTitle(lineupMetaRequest.getTitle());
         lineup = lineupRepository.saveAndFlush(lineup);
-        LineupResponse lineupResponse = new LineupResponse();
-        lineupResponse.setMap(lineup.getMap());
-        lineupResponse.setTitle(lineup.getTitle());
-        lineupResponse.setUuidLineup(lineup.getUuid());
-        return lineupResponse;
+        LineupMetaResponse lineupMetaResponse = new LineupMetaResponse();
+        lineupMetaResponse.setMap(lineup.getMap().name());
+        lineupMetaResponse.setTitle(lineup.getTitle());
+        lineupMetaResponse.setUuidLineup(lineup.getUuid());
+        return lineupMetaResponse;
     }
 
     public String deleteLineup(String uuid){
@@ -144,7 +194,7 @@ public class LineupService {
     }
 
     @Transactional
-    public List<NodeResponse> updateNodes(String uuid, List<NodeRequest> nodeRequests){
+    public LineupNodeResponse updateNodes(String uuid, List<NodeRequest> nodeRequests){
         Lineup lineup = lineupRepository.findByUuid(uuid);
         if(lineup==null)
         {
@@ -180,7 +230,6 @@ public class LineupService {
                 imageRepository.save(image);
             }
         }
-
         return getNodes(uuid);
     }
 

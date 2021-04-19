@@ -1,15 +1,24 @@
 package org.gtf.valorantlineup.models;
 
 import lombok.Data;
+import org.gtf.valorantlineup.enums.PSQLEnumType;
+import org.gtf.valorantlineup.enums.Peta;
+import org.hibernate.annotations.Type;
+import org.hibernate.annotations.TypeDef;
 
 import javax.persistence.*;
 import java.util.List;
+
 
 @Entity
 @Table(name = "lineups",
         indexes = {
         @Index(name = "uuid_index", columnList = "uuid")
         })
+@TypeDef(
+        name = "pgsql_enum",
+        typeClass = PSQLEnumType.class
+)
 @Data
 public class Lineup extends Base {
 
@@ -23,7 +32,12 @@ public class Lineup extends Base {
     @Column(name = "title")
     private String title;
 
-    @Column(name = "map")
-    private String map;
+    @Column(name = "map", columnDefinition = "map_info")
+    @Enumerated(EnumType.STRING)
+    @Type( type = "pgsql_enum" )
+    private Peta map;
+
+    @Column(name = "status")
+    private String status;
 
 }

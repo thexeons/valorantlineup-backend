@@ -2,9 +2,14 @@ package org.gtf.valorantlineup.controllers;
 
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.gtf.valorantlineup.dto.request.*;
 
+import org.gtf.valorantlineup.dto.response.LoginResponse;
 import org.gtf.valorantlineup.exception.AbstractRequestHandler;
 import org.gtf.valorantlineup.services.AuthenticationService;
 import org.slf4j.Logger;
@@ -33,6 +38,10 @@ public class AuthController {
     }
 
     @PostMapping("/signin")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully signed in",
+                    content = @Content(schema = @Schema(implementation = LoginResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Wrong username/email/password") })
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
         AbstractRequestHandler handler = new AbstractRequestHandler() {
             @Override

@@ -26,12 +26,12 @@ public abstract class Base {
 
     @CreatedDate
     @Temporal(TemporalType.TIMESTAMP)
-	@Column(name = "DATE_CREATED", updatable = false)
+	@Column(name = "createdDate", updatable = false)
 	private Date creationDate;
 
     @LastModifiedDate
     @Temporal(TemporalType.TIMESTAMP)
-    @Column(name = "DATE_MODIFIED")
+    @Column(name = "modifiedDate")
     private Date modificationDate;
 
     public Base() {

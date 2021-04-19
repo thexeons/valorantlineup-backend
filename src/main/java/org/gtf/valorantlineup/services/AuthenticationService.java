@@ -75,8 +75,13 @@ public class AuthenticationService {
             }
         }
         else {
+            try {
             user = userRepository.findByUsername(loginRequest.getUserIdentifier()).get();
             username = user.getUsername();
+            }catch(NoSuchElementException e)
+            {
+                user = null;
+            }
         }
 
         //Authenticate a user manually. This method will trigger SUCCESS / BAD CREDENTIAL EVENT listened by the AuthenticationListener.
