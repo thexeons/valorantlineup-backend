@@ -1,14 +1,15 @@
 package org.gtf.valorantlineup.controllers;
 
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.gtf.valorantlineup.dto.request.LineupEditRequest;
 import org.gtf.valorantlineup.dto.request.LineupMetaRequest;
-import org.gtf.valorantlineup.dto.request.NodeRequest;
+import org.gtf.valorantlineup.dto.request.PostRequest;
+import org.gtf.valorantlineup.dto.request.UpdateRequest;
 import org.gtf.valorantlineup.dto.response.*;
 import org.gtf.valorantlineup.enums.Peta;
 import org.gtf.valorantlineup.exception.AbstractRequestHandler;
@@ -19,8 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.util.List;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -71,11 +70,11 @@ public class LineupController {
             @ApiResponse(responseCode = "200", description = "Lineup meta posted",
                         content = @Content(schema = @Schema(implementation = LineupMetaResponse.class))
                         )})
-    public ResponseEntity<?> postLineup(@RequestBody LineupMetaRequest lineupMetaRequest) {
+    public ResponseEntity<?> postLineup(@RequestBody PostRequest request) {
         AbstractRequestHandler handler = new AbstractRequestHandler() {
             @Override
             public Object processRequest() {
-                return lineupService.postLineup(lineupMetaRequest);
+                return lineupService.postLineup(request);
             }
         };
         return handler.getResult();
@@ -99,11 +98,11 @@ public class LineupController {
 
     @PutMapping("/{uuidLineup}")
     @Operation(summary = "Edit lineup title.")
-    public ResponseEntity<?> editLineup(@PathVariable String uuidLineup, @RequestBody LineupMetaRequest lineupMetaRequest) {
+    public ResponseEntity<?> editLineup(@PathVariable String uuidLineup, @RequestBody LineupEditRequest request) {
         AbstractRequestHandler handler = new AbstractRequestHandler() {
             @Override
             public Object processRequest() {
-                return  lineupService.editLineup(uuidLineup, lineupMetaRequest);
+                return lineupService.editLineup(uuidLineup, request);
             }
         };
         return handler.getResult();
@@ -123,7 +122,7 @@ public class LineupController {
 
     @PutMapping("/update/{uuidLineup}")
     @Operation(summary = "Update a specific lineup data.")
-    public ResponseEntity<?> updateLineupNodes(@PathVariable String uuidLineup, @RequestBody List<NodeRequest> lineupRequest) {
+    public ResponseEntity<?> updateLineupNodes(@PathVariable String uuidLineup, @RequestBody UpdateRequest lineupRequest) {
         AbstractRequestHandler handler = new AbstractRequestHandler() {
             @Override
             public Object processRequest() {

@@ -11,9 +11,8 @@ import org.gtf.valorantlineup.enums.ERole;
 import org.gtf.valorantlineup.exception.GTFException;
 import org.gtf.valorantlineup.models.Role;
 import org.gtf.valorantlineup.models.User;
-import org.gtf.valorantlineup.models.UserRefreshToken;
+import org.gtf.valorantlineup.models.redis.RedisRefreshToken;
 import org.gtf.valorantlineup.repositories.RoleRepository;
-import org.gtf.valorantlineup.repositories.UserRefreshTokenRepository;
 import org.gtf.valorantlineup.repositories.UserRepository;
 import org.gtf.valorantlineup.security.implementation.UserDetailsImpl;
 import org.gtf.valorantlineup.security.jwt.AuthEntryPointJwt;
@@ -27,14 +26,11 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static org.springframework.data.util.Optionals.ifPresentOrElse;
 
 @Service
 public class AuthenticationService {
@@ -48,18 +44,17 @@ public class AuthenticationService {
     private final PasswordEncoder encoder;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
-    private final UserRefreshTokenRepository userRefreshTokenRepository;
-
+    private final org.gtf.valorantlineup.repositories.redis.RedisRefreshTokenRepository redisToken;
 
     @Autowired
-    public AuthenticationService(@Value("${refresh.expiration.day}") int REFRESH_DURATION, AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserRepository userRepository, RoleRepository roleRepository, UserRefreshTokenRepository userRefreshTokenRepository, PasswordEncoder encoder) {
+    public AuthenticationService(@Value("${refresh.expiration.day}") int REFRESH_DURATION, AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, org.gtf.valorantlineup.repositories.redis.RedisRefreshTokenRepository redisToken) {
         this.REFRESH_DURATION = REFRESH_DURATION;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
-        this.userRefreshTokenRepository = userRefreshTokenRepository;
         this.encoder = encoder;
+        this.redisToken = redisToken;
     }
 
     public LoginResponse authenticateUser(LoginRequest loginRequest) {
@@ -108,40 +103,42 @@ public class AuthenticationService {
 
     public JwtResponse refreshAccessToken(String refreshToken) {
         JwtResponse jwtResponse = new JwtResponse();
-        ifPresentOrElse(userRefreshTokenRepository.findByToken(refreshToken), token -> {
+        RedisRefreshToken token = redisToken.fetchTokenByToken(refreshToken);
+        if(token!=null)
+        {
             if (token.getExpiryDate().compareTo(new Date()) > 0) {
-                //Authentication authentication = new UsernamePasswordAuthenticationToken(token.getUser().getUsername(), null);
-                //SecurityContextHolder.getContext().setAuthentication(authentication);
-                jwtResponse.setToken(jwtUtils.generateJwtToken(token.getUser()));
+                jwtResponse.setToken(jwtUtils.generateJwtToken(token.getUsername()));
             } else {
                 throw new GTFException(HttpStatus.BAD_REQUEST, "Error : Refresh Token expired");
             }
-        }, () -> {
-            throw new GTFException(HttpStatus.BAD_REQUEST, "Error : Invalid Refresh Token");
-        });
+        }else {
+                throw new GTFException(HttpStatus.BAD_REQUEST, "Error : Invalid Refresh Token");
+        }
         return jwtResponse;
     }
 
     private String createRefreshToken(User user) {
         //Generate token from random string
         String token = RandomStringUtils.randomAlphanumeric(128);
-        ifPresentOrElse(userRefreshTokenRepository.findByUser(user), refreshToken -> {
-            refreshToken.setToken(token);
-            refreshToken.setExpiryDate(DateUtils.addDays(new Date(), REFRESH_DURATION));
-            userRefreshTokenRepository.save(refreshToken);
-        }, () -> {
-            UserRefreshToken newRefreshToken = new UserRefreshToken();
-            newRefreshToken.setExpiryDate(DateUtils.addDays(new Date(), REFRESH_DURATION));
-            newRefreshToken.setToken(token);
-            newRefreshToken.setUser(user);
-            userRefreshTokenRepository.save(newRefreshToken);
-        });
+        //Test Redis
+        RedisRefreshToken refreshToken = redisToken.fetchTokenByUserId(user.getUuid());
+        RedisRefreshToken newToken = new RedisRefreshToken();
+        newToken.setToken(token);
+        newToken.setUserId(user.getUuid());
+        newToken.setUsername(user.getUsername());
+        newToken.setExpiryDate(DateUtils.addDays(new Date(), REFRESH_DURATION));
+        if(refreshToken == null)
+        {
+            redisToken.saveToken(newToken);
+        }
+        else {
+            redisToken.updateToken(newToken);
+        }
         return token;
     }
 
-    public void logoutUser(RefreshTokenRequest refreshToken) {
-        userRefreshTokenRepository.findByToken(refreshToken.getRefreshToken())
-                .ifPresent(userRefreshTokenRepository::delete);
+    public void logoutUser(String username) {
+        redisToken.deleteToken(username);
     }
 
     public void registerUser(SignupRequest signUpRequest) {

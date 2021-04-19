@@ -36,10 +36,10 @@ public class JwtUtils {
 				.compact();
 	}
 
-	public String generateJwtToken(User user) {
+	public String generateJwtToken(String username) {
 
 		return Jwts.builder()
-				.setSubject((user.getUsername()))
+				.setSubject(username)
 				.setIssuedAt(new Date())
 				.setExpiration(new Date((new Date()).getTime() + jwtExpirationMs))
 				.signWith(SignatureAlgorithm.HS512, jwtSecret)

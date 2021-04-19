@@ -64,12 +64,12 @@ public class AuthController {
         return handler.getResult();
     }
 
-    @DeleteMapping("/logout")
-    public ResponseEntity<?> logoutUser(@Valid @RequestBody RefreshTokenRequest refreshToken) {
+    @DeleteMapping("/logout/{userId}")
+    public ResponseEntity<?> logoutUser(@PathVariable String token) {
         AbstractRequestHandler handler = new AbstractRequestHandler() {
             @Override
             public Object processRequest() {
-                authenticationService.logoutUser(refreshToken);
+                authenticationService.logoutUser(token);
                 return "Token removed!";
             }
         };

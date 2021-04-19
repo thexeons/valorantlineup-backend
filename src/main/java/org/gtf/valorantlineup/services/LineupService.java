@@ -1,8 +1,7 @@
 package org.gtf.valorantlineup.services;
 
 import org.apache.commons.io.FilenameUtils;
-import org.gtf.valorantlineup.dto.request.LineupMetaRequest;
-import org.gtf.valorantlineup.dto.request.NodeRequest;
+import org.gtf.valorantlineup.dto.request.*;
 import org.gtf.valorantlineup.dto.response.*;
 import org.gtf.valorantlineup.enums.Peta;
 import org.gtf.valorantlineup.exception.GTFException;
@@ -10,6 +9,7 @@ import org.gtf.valorantlineup.models.*;
 import org.gtf.valorantlineup.repositories.ImageRepository;
 import org.gtf.valorantlineup.repositories.NodeRepository;
 import org.gtf.valorantlineup.repositories.LineupRepository;
+import org.hibernate.sql.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,13 +152,19 @@ public class LineupService {
         return response;
     }
 
-    public LineupMetaResponse postLineup(LineupMetaRequest lineupMetaRequest){
+    public LineupMetaResponse postLineup(PostRequest request){
         User user = authenticationService.getCurrentUser().orElseThrow(() -> new GTFException(HttpStatus.NOT_FOUND, "Error: User not found"));
         Lineup lineup = new Lineup();
         lineup.setUser(user);
-        lineup.setTitle(lineupMetaRequest.getTitle());
-        lineup.setMap(Peta.valueOf(lineupMetaRequest.getMap()));
+        lineup.setTitle(request.getMeta().getTitle());
+        lineup.setMap(Peta.valueOf(request.getMeta().getMap()));
         lineup = lineupRepository.saveAndFlush(lineup);
+        //Insert nodes
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.setTitle(lineup.getTitle());
+        updateRequest.setNodes(request.getNodes());
+        updateNodes(lineup.getUuid(),updateRequest);
+        //Construct response
         LineupMetaResponse lineupMetaResponse = new LineupMetaResponse();
         lineupMetaResponse.setMap(lineup.getMap().name());
         lineupMetaResponse.setTitle(lineup.getTitle());
@@ -166,7 +172,7 @@ public class LineupService {
         return lineupMetaResponse;
     }
 
-    public LineupMetaResponse editLineup(String uuid, LineupMetaRequest lineupMetaRequest){
+    public LineupMetaResponse editLineup(String uuid, LineupEditRequest request){
         User user = authenticationService.getCurrentUser().orElseThrow(() -> new GTFException(HttpStatus.NOT_FOUND, "Error: User not found"));
         Lineup lineup = lineupRepository.findByUuid(uuid);
         if(lineup==null){
@@ -175,7 +181,7 @@ public class LineupService {
         if(lineup.getUser().getUuid()!=user.getUuid()){
             throw new GTFException(HttpStatus.FORBIDDEN, "Can't edit other user's lineup!");
         }
-        lineup.setTitle(lineupMetaRequest.getTitle());
+        lineup.setTitle(request.getTitle());
         lineup = lineupRepository.saveAndFlush(lineup);
         LineupMetaResponse lineupMetaResponse = new LineupMetaResponse();
         lineupMetaResponse.setMap(lineup.getMap().name());
@@ -194,8 +200,11 @@ public class LineupService {
     }
 
     @Transactional
-    public LineupNodeResponse updateNodes(String uuid, List<NodeRequest> nodeRequests){
+    public LineupNodeResponse updateNodes(String uuid, UpdateRequest request){
+        List<NodeRequest> nodeRequests = request.getNodes();
         Lineup lineup = lineupRepository.findByUuid(uuid);
+        lineup.setTitle(request.getTitle());
+        lineup = lineupRepository.saveAndFlush(lineup);
         if(lineup==null)
         {
             throw new GTFException(HttpStatus.NOT_FOUND, "Error: Lineup not found");
