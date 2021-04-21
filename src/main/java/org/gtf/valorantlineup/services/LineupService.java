@@ -123,24 +123,34 @@ public class LineupService {
             response.setMeta(meta);
         }
         List<Node> nodes = nodeRepository.findAllByLineupUuid(uuid);
+        if(nodes == null)
+        {
+            response.setNodes(Collections.emptyList());
+        }
+        else
+        {
         for (int i = 0; i < nodes.size(); i++) {
             NodeResponse row = new NodeResponse();
             row.setUuidNode(nodes.get(i).getUuid());
             row.setTitle(nodes.get(i).getTitle());
             row.setDescription(nodes.get(i).getDescription());
             row.setSkillType(nodes.get(i).getSkillType());
-            HashMap<String,Double> source = new HashMap<>();
-            source.put("x",nodes.get(i).getSource().getX());
-            source.put("y",nodes.get(i).getSource().getY());
+            HashMap<String, Double> source = new HashMap<>();
+            source.put("x", nodes.get(i).getSource().getX());
+            source.put("y", nodes.get(i).getSource().getY());
             row.setSource(source);
-            HashMap<String,Double> destination = new HashMap<>();
-            destination.put("x",nodes.get(i).getDestination().getX());
-            destination.put("y",nodes.get(i).getDestination().getY());
+            HashMap<String, Double> destination = new HashMap<>();
+            if(nodes.get(i).getDestination() == null){
+                destination.put("x",null);
+                destination.put("y",null);
+            } else{
+                destination.put("x", nodes.get(i).getDestination().getX());
+                destination.put("y", nodes.get(i).getDestination().getY());
+            }
             row.setDestination(destination);
             List<ImageResponse> imageResponses = new ArrayList<>();
             List<Image> images = imageRepository.findAllByNode(nodes.get(i));
-            for(int j=0;j<images.size();j++)
-            {
+            for (int j = 0; j < images.size(); j++) {
                 ImageResponse imageResponse = new ImageResponse();
                 imageResponse.setUuid(images.get(j).getUuid());
                 imageResponse.setUrl(images.get(j).getUrl());
@@ -148,6 +158,8 @@ public class LineupService {
             }
             row.setImages(imageResponses);
             nodeResponse.add(row);
+        }
+            response.setNodes(nodeResponse);
         }
         return response;
     }
@@ -228,12 +240,12 @@ public class LineupService {
             node.setSkillType(nodeRequests.get(i).getSkillType());
             nodes.add(node);
             node = nodeRepository.save(node);
-            for(int j = 0; j < nodeRequests.get(i).getUriIds().length; j++)
+            for(int j = 0; j < nodeRequests.get(i).getImageId().length; j++)
             {
-                Image image = imageRepository.findByUuid(nodeRequests.get(i).getUriIds()[j]);
+                Image image = imageRepository.findByUuid(nodeRequests.get(i).getImageId()[j]);
                 if(image == null)
                 {
-                    throw new GTFException(HttpStatus.CONFLICT, "Error: Image not found");
+                    throw new GTFException(HttpStatus.CONFLICT, "Error: Image (" + nodeRequests.get(i).getImageId()[j] +  ") not found");
                 }
                 image.setNode(node);
                 imageRepository.save(image);

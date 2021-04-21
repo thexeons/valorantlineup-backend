@@ -24,5 +24,5 @@ public class NodeRequest {
 
     private Double destinationY;
 
-    private String[] uriIds;
+    private String[] imageId;
 }
