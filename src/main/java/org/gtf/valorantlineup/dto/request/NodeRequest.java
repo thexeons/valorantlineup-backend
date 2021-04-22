@@ -1,6 +1,7 @@
 package org.gtf.valorantlineup.dto.request;
 
 import lombok.Data;
+import org.gtf.valorantlineup.models.Coordinate;
 
 import javax.validation.constraints.NotBlank;
 
@@ -14,15 +15,20 @@ public class NodeRequest {
     @NotBlank
     private String skillType;
 
-    @NotBlank
-    private double sourceX;
+//    @NotBlank
+//    private double sourceX;
+//
+//    @NotBlank
+//    private double sourceY;
 
     @NotBlank
-    private double sourceY;
+    private Coordinate source;
 
-    private Double destinationX;
+    private Coordinate destination;
 
-    private Double destinationY;
+//    private Double destinationX;
+//
+//    private Double destinationY;
 
-    private String[] imageId;
+    private String[] images;
 }

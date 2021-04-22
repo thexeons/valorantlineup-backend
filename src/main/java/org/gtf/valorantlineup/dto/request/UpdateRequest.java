@@ -9,7 +9,7 @@ import java.util.List;
 public class UpdateRequest {
 
     @NotBlank
-    private String title;
+    private LineupEditRequest meta;
 
     private List<NodeRequest> nodes;
 

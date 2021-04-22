@@ -173,7 +173,9 @@ public class LineupService {
         lineup = lineupRepository.saveAndFlush(lineup);
         //Insert nodes
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.setTitle(lineup.getTitle());
+        LineupEditRequest meta = new LineupEditRequest();
+        meta.setTitle(lineup.getTitle());
+        updateRequest.setMeta(meta);
         updateRequest.setNodes(request.getNodes());
         updateNodes(lineup.getUuid(),updateRequest);
         //Construct response
@@ -215,7 +217,7 @@ public class LineupService {
     public LineupNodeResponse updateNodes(String uuid, UpdateRequest request){
         List<NodeRequest> nodeRequests = request.getNodes();
         Lineup lineup = lineupRepository.findByUuid(uuid);
-        lineup.setTitle(request.getTitle());
+        lineup.setTitle(request.getMeta().getTitle());
         lineup = lineupRepository.saveAndFlush(lineup);
         if(lineup==null)
         {
@@ -229,23 +231,23 @@ public class LineupService {
             node.setTitle(nodeRequests.get(i).getTitle());
             node.setDescription(nodeRequests.get(i).getDescription());
             node.setLineup(lineup);
-            node.setSource(new Coordinate(nodeRequests.get(i).getSourceX(),nodeRequests.get(i).getSourceY()));
-            if(nodeRequests.get(i).getDestinationX() == null || nodeRequests.get(i).getDestinationY() == null ){
+            node.setSource(new Coordinate(nodeRequests.get(i).getSource().getX(),nodeRequests.get(i).getSource().getY()));
+            if(nodeRequests.get(i).getDestination() == null){
                 node.setDestination(new Coordinate(null,null));
             }
             else
             {
-                node.setDestination(new Coordinate(nodeRequests.get(i).getDestinationX(),nodeRequests.get(i).getDestinationY()));
+                node.setDestination(new Coordinate(nodeRequests.get(i).getDestination().getX(),nodeRequests.get(i).getDestination().getY()));
             }
             node.setSkillType(nodeRequests.get(i).getSkillType());
             nodes.add(node);
             node = nodeRepository.save(node);
-            for(int j = 0; j < nodeRequests.get(i).getImageId().length; j++)
+            for(int j = 0; j < nodeRequests.get(i).getImages().length; j++)
             {
-                Image image = imageRepository.findByUuid(nodeRequests.get(i).getImageId()[j]);
+                Image image = imageRepository.findByUuid(nodeRequests.get(i).getImages()[j]);
                 if(image == null)
                 {
-                    throw new GTFException(HttpStatus.CONFLICT, "Error: Image (" + nodeRequests.get(i).getImageId()[j] +  ") not found");
+                    throw new GTFException(HttpStatus.CONFLICT, "Error: Image (" + nodeRequests.get(i).getImages()[j] +  ") not found");
                 }
                 image.setNode(node);
                 imageRepository.save(image);
