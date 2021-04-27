@@ -1,12 +1,12 @@
 package org.gtf.valorantlineup.dto.request;
 
+
+import lombok.Data;
+
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import lombok.Data;
 
-
-import java.util.Set;
 
 @Data
 public class SignupRequest {
@@ -16,7 +16,7 @@ public class SignupRequest {
  
     @NotBlank
     @Size(max = 50)
-    @Email
+    @Email(message = "Email should be valid")
     private String email;
     
     @NotBlank

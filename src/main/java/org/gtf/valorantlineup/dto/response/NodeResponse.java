@@ -30,4 +30,7 @@ public class NodeResponse {
     @JsonProperty("images")
     private List<ImageResponse> images;
 
+    @JsonProperty("tags")
+    private List<String> tags;
+
 }

@@ -148,6 +148,7 @@ public class LineupService {
                 destination.put("y", nodes.get(i).getDestination().getY());
             }
             row.setDestination(destination);
+            row.setTags(nodes.get(i).getTags());
             List<ImageResponse> imageResponses = new ArrayList<>();
             List<Image> images = imageRepository.findAllByNode(nodes.get(i));
             for (int j = 0; j < images.size(); j++) {
@@ -240,11 +241,12 @@ public class LineupService {
                 node.setDestination(new Coordinate(nodeRequests.get(i).getDestination().getX(),nodeRequests.get(i).getDestination().getY()));
             }
             node.setSkillType(nodeRequests.get(i).getSkillType());
-            nodes.add(node);
+            node.setTags(Arrays.asList(nodeRequests.get(i).getTags()));
             node = nodeRepository.save(node);
+            nodes.add(node);
             for(int j = 0; j < nodeRequests.get(i).getImages().length; j++)
             {
-                Image image = imageRepository.findByUuid(nodeRequests.get(i).getImages()[j]);
+                Image image = imageRepository.findByUuid(nodeRequests.get(i).getImages()[j].getUuid());
                 if(image == null)
                 {
                     throw new GTFException(HttpStatus.CONFLICT, "Error: Image (" + nodeRequests.get(i).getImages()[j] +  ") not found");
@@ -259,14 +261,15 @@ public class LineupService {
     public ImageResponse addImage(MultipartFile file)
     {
         SimpleDateFormat datecode = new SimpleDateFormat("ddMMyyyyhhmmss");
-
+        String savedName = "";
         String extension = FilenameUtils.getExtension(file.getOriginalFilename());
         if (file.isEmpty()) {
             throw new GTFException(HttpStatus.BAD_REQUEST,"Error: File is empty.");
         }
         try {
+            savedName = datecode.format(new Date()) + "." + extension;
             byte[] bytes = file.getBytes();
-            Path path = Paths.get(uploadPath + datecode.format(new Date()) + "." + extension);
+            Path path = Paths.get(uploadPath + savedName);
             if (!Files.exists(path.getParent()))
                 Files.createDirectories(path.getParent());
             Files.write(path, bytes);
@@ -276,7 +279,8 @@ public class LineupService {
         Image image = new Image();
         image.setFileSize(file.getSize());
         image.setOriginalName(file.getOriginalFilename());
-        image.setUrl(downloadPath + datecode.format(new Date()) + "." + extension);
+        image.setSavedName(savedName);
+        image.setUrl(downloadPath + savedName);
         image = imageRepository.saveAndFlush(image);
         ImageResponse response = new ImageResponse();
         response.setUrl(image.getUrl());

@@ -30,5 +30,7 @@ public class NodeRequest {
 //
 //    private Double destinationY;
 
-    private String[] images;
+    private ImageRequest[] images;
+
+    private String[] tags;
 }

@@ -96,18 +96,6 @@ public class LineupController {
         return handler.getResult();
     }
 
-    @PutMapping("/{uuidLineup}")
-    @Operation(summary = "Edit lineup title.")
-    public ResponseEntity<?> editLineup(@PathVariable String uuidLineup, @RequestBody LineupEditRequest request) {
-        AbstractRequestHandler handler = new AbstractRequestHandler() {
-            @Override
-            public Object processRequest() {
-                return lineupService.editLineup(uuidLineup, request);
-            }
-        };
-        return handler.getResult();
-    }
-
     @DeleteMapping("/{uuidLineup}")
     @Operation(summary = "Delete a specific lineup.")
     public ResponseEntity<?> deleteLineup(@PathVariable String uuidLineup) {
@@ -120,7 +108,19 @@ public class LineupController {
         return handler.getResult();
     }
 
-    @PutMapping("/update/{uuidLineup}")
+//    @PutMapping("/{uuidLineup}")
+//    @Operation(summary = "Edit lineup title.")
+//    public ResponseEntity<?> editLineup(@PathVariable String uuidLineup, @RequestBody LineupEditRequest request) {
+//        AbstractRequestHandler handler = new AbstractRequestHandler() {
+//            @Override
+//            public Object processRequest() {
+//                return lineupService.editLineup(uuidLineup, request);
+//            }
+//        };
+//        return handler.getResult();
+//    }
+
+    @PutMapping("/{uuidLineup}")
     @Operation(summary = "Update a specific lineup data.")
     public ResponseEntity<?> updateLineupNodes(@PathVariable String uuidLineup, @RequestBody UpdateRequest lineupRequest) {
         AbstractRequestHandler handler = new AbstractRequestHandler() {
