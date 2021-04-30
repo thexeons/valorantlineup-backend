@@ -1,5 +1,7 @@
 package org.gtf.valorantlineup.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -13,13 +15,24 @@ import org.gtf.valorantlineup.dto.request.UpdateRequest;
 import org.gtf.valorantlineup.dto.response.*;
 import org.gtf.valorantlineup.enums.Peta;
 import org.gtf.valorantlineup.exception.AbstractRequestHandler;
+import org.gtf.valorantlineup.exception.GTFException;
+import org.gtf.valorantlineup.models.NodeTest;
 import org.gtf.valorantlineup.services.LineupService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import javax.persistence.EntityManager;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 
 @CrossOrigin(origins = "*", maxAge = 3600)
 @RestController
@@ -29,6 +42,9 @@ public class LineupController {
 
     @Autowired
     LineupService lineupService;
+
+    @Autowired
+    EntityManager entityManager;
 
     @GetMapping("")
     @PreAuthorize("isAuthenticated()")
@@ -146,5 +162,12 @@ public class LineupController {
             }
         };
         return handler.getResult();
+    }
+
+    @GetMapping(path = "/test/{uuidLineup}")
+    @Operation(summary = "Test API.")
+    @Transactional
+    public CompletableFuture<LineupNodeResponse> getUserByName(@PathVariable String uuidLineup) {
+        return lineupService.asyncLineup(uuidLineup);
     }
 }

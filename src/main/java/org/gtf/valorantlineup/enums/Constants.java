@@ -15,5 +15,4 @@ public class Constants {
         public static final String SOVA_SHOCK_DART = "Sova Shock Dart";
     }
 
-
 }

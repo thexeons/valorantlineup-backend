@@ -6,9 +6,7 @@ import org.gtf.valorantlineup.dto.response.*;
 import org.gtf.valorantlineup.enums.Peta;
 import org.gtf.valorantlineup.exception.GTFException;
 import org.gtf.valorantlineup.models.*;
-import org.gtf.valorantlineup.repositories.ImageRepository;
-import org.gtf.valorantlineup.repositories.NodeRepository;
-import org.gtf.valorantlineup.repositories.LineupRepository;
+import org.gtf.valorantlineup.repositories.*;
 import org.hibernate.sql.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +17,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,6 +28,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 @Service
 public class LineupService {
@@ -44,6 +45,12 @@ public class LineupService {
 
     @Autowired
     ImageRepository imageRepository;
+
+    @Autowired
+    AsyncLineupRepository asyncLineupRepository;
+
+    @Autowired
+    AsyncNodeRepository asyncNodeRepository;
 
     @Value("${upload.path}")
     String uploadPath;
@@ -109,17 +116,68 @@ public class LineupService {
         return response;
     }
 
+    private LineupNodeResponse convertLineupDTO(LineupMetaResponse meta, List<NodeResponse> nodes){
+        LineupNodeResponse response = new LineupNodeResponse();
+        response.setMeta(meta);
+        response.setNodes(nodes);
+        return response;
+    }
+
+    private NodeResponse convertNodeDTO(Node node){
+        NodeResponse response = new NodeResponse();
+        response.setUuidNode(node.getUuid());
+        response.setTitle(node.getTitle());
+        response.setDescription(node.getDescription());
+        response.setSkillType(node.getSkillType());
+        HashMap<String, Double> source = new HashMap<>();
+        source.put("x", node.getSource().getX());
+        source.put("y", node.getSource().getY());
+        response.setSource(source);
+        HashMap<String, Double> destination = new HashMap<>();
+        if(node.getDestination() == null){
+            destination.put("x",null);
+            destination.put("y",null);
+        } else{
+            destination.put("x", node.getDestination().getX());
+            destination.put("y", node.getDestination().getY());
+        }
+        response.setDestination(destination);
+        response.setTags(node.getTags());
+        List<ImageResponse> imageResponses = new ArrayList<>();
+        List<Image> images = imageRepository.findAllByNode(node);
+        for (int j = 0; j < images.size(); j++) {
+            ImageResponse imageResponse = new ImageResponse();
+            imageResponse.setUuid(images.get(j).getUuid());
+            imageResponse.setUrl(images.get(j).getUrl());
+            imageResponses.add(imageResponse);
+        }
+        response.setImages(imageResponses);
+        return response;
+    }
+
+
+
+    @Async
+    public CompletableFuture<LineupNodeResponse> asyncLineup(String uuid) {
+        CompletableFuture<LineupMetaResponse> meta = asyncLineupRepository.findUuid(uuid).thenApply(this::convertLineupMetaDTO);
+        CompletableFuture<List<NodeResponse>> nodes = asyncNodeRepository.findAllByLineupUuid(uuid).thenApply(n-> n.stream().map(this::convertNodeDTO).collect(Collectors.toList()));
+        CompletableFuture<LineupNodeResponse> response = meta.thenCombine(nodes, (m,n) -> {
+            LineupNodeResponse result = new LineupNodeResponse();
+            result.setMeta(m);
+            result.setNodes(n);
+            return result;
+        });
+    return response;
+    }
+
     public LineupNodeResponse getNodes(String uuid) {
         LineupNodeResponse response = new LineupNodeResponse();
         List<NodeResponse> nodeResponse = new ArrayList<>();
-        LineupMetaResponse meta = new LineupMetaResponse();
         Lineup lineup = lineupRepository.findByUuid(uuid);
         if(lineup == null){
             throw new GTFException(HttpStatus.NOT_FOUND,"Error: Lineup not found!");
         } else {
-            meta.setMap(lineup.getMap().name());
-            meta.setUuidLineup(lineup.getUuid());
-            meta.setTitle(lineup.getTitle());
+            LineupMetaResponse meta = convertLineupMetaDTO(lineup);
             response.setMeta(meta);
         }
         List<Node> nodes = nodeRepository.findAllByLineupUuid(uuid);
@@ -130,34 +188,7 @@ public class LineupService {
         else
         {
         for (int i = 0; i < nodes.size(); i++) {
-            NodeResponse row = new NodeResponse();
-            row.setUuidNode(nodes.get(i).getUuid());
-            row.setTitle(nodes.get(i).getTitle());
-            row.setDescription(nodes.get(i).getDescription());
-            row.setSkillType(nodes.get(i).getSkillType());
-            HashMap<String, Double> source = new HashMap<>();
-            source.put("x", nodes.get(i).getSource().getX());
-            source.put("y", nodes.get(i).getSource().getY());
-            row.setSource(source);
-            HashMap<String, Double> destination = new HashMap<>();
-            if(nodes.get(i).getDestination() == null){
-                destination.put("x",null);
-                destination.put("y",null);
-            } else{
-                destination.put("x", nodes.get(i).getDestination().getX());
-                destination.put("y", nodes.get(i).getDestination().getY());
-            }
-            row.setDestination(destination);
-            row.setTags(nodes.get(i).getTags());
-            List<ImageResponse> imageResponses = new ArrayList<>();
-            List<Image> images = imageRepository.findAllByNode(nodes.get(i));
-            for (int j = 0; j < images.size(); j++) {
-                ImageResponse imageResponse = new ImageResponse();
-                imageResponse.setUuid(images.get(j).getUuid());
-                imageResponse.setUrl(images.get(j).getUrl());
-                imageResponses.add(imageResponse);
-            }
-            row.setImages(imageResponses);
+            NodeResponse row = convertNodeDTO(nodes.get(i));
             nodeResponse.add(row);
         }
             response.setNodes(nodeResponse);
@@ -170,7 +201,12 @@ public class LineupService {
         Lineup lineup = new Lineup();
         lineup.setUser(user);
         lineup.setTitle(request.getMeta().getTitle());
-        lineup.setMap(Peta.valueOf(request.getMeta().getMap()));
+        try{
+        lineup.setMap(Peta.valueOf(request.getMeta().getMap()));}
+        catch (IllegalArgumentException e)
+        {
+            throw new GTFException(HttpStatus.BAD_REQUEST, "Error: " + request.getMeta().getMap() + " enum not recognized.");
+        }
         lineup = lineupRepository.saveAndFlush(lineup);
         //Insert nodes
         UpdateRequest updateRequest = new UpdateRequest();

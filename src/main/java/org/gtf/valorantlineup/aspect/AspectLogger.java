@@ -54,8 +54,9 @@ public class AspectLogger {
         StopWatch stopWatch = new StopWatch();
         try {
             stopWatch.start();
-            LOGGER.info("Starting: " + joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName());
-            LOGGER.info("Method: " + request.getMethod());
+//            LOGGER.info("Starting: " + joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName());
+            LOGGER.info(request.getMethod() + " " + joinPoint.getSignature().getName());
+//            LOGGER.info("Method: " + request.getMethod());
             if(LOG_REQUESTBODY) {
                 if ("POST".equalsIgnoreCase(request.getMethod()) || "PUT".equalsIgnoreCase(request.getMethod())) LOGGER.info("Payload " + getPayload(joinPoint));
             }
@@ -66,6 +67,7 @@ public class AspectLogger {
             LOGGER.info("Execution time : " + stopWatch.getTotalTimeMillis() + " ms");
         }
     }
+
     //Logs return object from controller package
     @AfterReturning(pointcut = "execution(* org.gtf.valorantlineup.controllers..*.*(..))",
             returning = "retVal")

@@ -3,7 +3,6 @@ package org.gtf.valorantlineup.services;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.gtf.valorantlineup.dto.request.LoginRequest;
-import org.gtf.valorantlineup.dto.request.RefreshTokenRequest;
 import org.gtf.valorantlineup.dto.request.SignupRequest;
 import org.gtf.valorantlineup.dto.response.JwtResponse;
 import org.gtf.valorantlineup.dto.response.LoginResponse;
@@ -14,6 +13,7 @@ import org.gtf.valorantlineup.models.User;
 import org.gtf.valorantlineup.models.redis.RedisRefreshToken;
 import org.gtf.valorantlineup.repositories.RoleRepository;
 import org.gtf.valorantlineup.repositories.UserRepository;
+import org.gtf.valorantlineup.repositories.redis.RedisRefreshTokenRepository;
 import org.gtf.valorantlineup.security.implementation.UserDetailsImpl;
 import org.gtf.valorantlineup.security.jwt.AuthEntryPointJwt;
 import org.gtf.valorantlineup.security.jwt.JwtUtils;
@@ -35,6 +35,7 @@ import java.util.stream.Collectors;
 @Service
 public class AuthenticationService {
 
+
     private static final Logger LOGGER = LoggerFactory.getLogger(AuthEntryPointJwt.class);
 
     private int REFRESH_DURATION;
@@ -47,7 +48,7 @@ public class AuthenticationService {
     private final org.gtf.valorantlineup.repositories.redis.RedisRefreshTokenRepository redisToken;
 
     @Autowired
-    public AuthenticationService(@Value("${refresh.expiration.day}") int REFRESH_DURATION, AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, org.gtf.valorantlineup.repositories.redis.RedisRefreshTokenRepository redisToken) {
+    public AuthenticationService(@Value("${refresh.expiration.day}") int REFRESH_DURATION, AuthenticationManager authenticationManager, JwtUtils jwtUtils, UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder encoder, RedisRefreshTokenRepository redisToken) {
         this.REFRESH_DURATION = REFRESH_DURATION;
         this.authenticationManager = authenticationManager;
         this.jwtUtils = jwtUtils;
@@ -85,6 +86,8 @@ public class AuthenticationService {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         LoginResponse loginResponse = new LoginResponse();
+
+        loginResponse.setData(user.getUsername());
 
         //generate JWT
         loginResponse.setToken(jwtUtils.generateJwtToken(authentication));
